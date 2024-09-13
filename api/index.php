@@ -1,6 +1,7 @@
 <?php
     error_reporting(E_ALL ^ E_DEPRECATED);
     require_once("REST.api.php");
+    require_once("libs/Db.class.php");
 
     class API extends REST {
 
@@ -16,34 +17,7 @@
 
         public function __construct(){
             parent::__construct();                // Init parent contructor
-
-            $json_config = file_get_contents($_SERVER['DOCUMENT_ROOT']."/../env.json");
-            $config = json_decode($json_config,true);
-            $this->DB_SERVER = $config['db_host'];
-            $this->DB_USER = $config['db_username'];
-            $this->DB_PASSWORD = $config['db_password'];
-            $this->DB = $config['db_database'];
-
-            $this->dbConnect();                    // Initiate Database connection
-        }
-
-        /*
-           Database connection
-        */
-        private function dbConnect(){
-
-
-
-            if ($this->db != NULL) {
-				return $this->db;
-			} else {
-				$this->db = mysqli_connect($this->DB_SERVER,$this->DB_USER,$this->DB_PASSWORD,$this->DB);
-				if (!$this->db) {
-					die("Connection failed: ".mysqli_connect_error());
-				} else {
-					return $this->db;
-				}
-			}
+            $this->$db = Database::db_Connect();                    // Initiate Database connection
         }
 
         /*
