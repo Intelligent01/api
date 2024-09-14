@@ -3,18 +3,11 @@
     require_once("REST.api.php");
     require_once("libs/Db.class.php");
     require_once("libs/Signup.class.php");
-    require_once('../vendor/autoload.php');
 
 
     class API extends REST {
 
         public $data = "";
-
-        private $DB_SERVER = "mysql.selfmade.ninja";
-        private $DB_USER = "apiroot";
-        private $DB_PASSWORD = "Api@12345";
-        private $DB = "apiroot_api";
-        
 
         private $db = NULL;
 
@@ -130,7 +123,7 @@
                         "user id" => $s->id,
                     ];
                     $this->response($this->json($data),200);
-                    $s->send_verification_main();
+                    
                 }catch (Exception $e){
                     $data = [
                         "error" => $e->getMessage(),
@@ -148,6 +141,26 @@
             
         }
         
+
+        private function signup_verify(){
+            $this->db = Database::db_connect();
+            $sql = "update auth set active = 1 ";
+            $result=$this->db->query($sql);
+            if (!$result) {
+                $data = [
+                    "error" => "account is activate",
+                ];
+                $this->response($this->json($data),500);
+            }else{
+                $data = [
+                    "message" => "activation successfully done ....",
+                ];
+                $this->response($this->json($data),200);
+            }
+        }
+    
+
+
     }
         // Initiiate Library
         
