@@ -2,6 +2,9 @@
     error_reporting(E_ALL ^ E_DEPRECATED);
     require_once("REST.api.php");
     require_once("libs/Db.class.php");
+    require_once("libs/Signup.class.php");
+    require_once('../vendor/autoload.php');
+
 
     class API extends REST {
 
@@ -17,7 +20,7 @@
 
         public function __construct(){
             parent::__construct();                // Init parent contructor
-            $this->$db = Database::db_Connect();                    // Initiate Database connection
+            $this->db = Database::db_Connect();                    // Initiate Database connection
         }
 
         /*
@@ -112,10 +115,42 @@
             }
         }
 
+        
+        
+        private function signup(){
+            if ($this->get_request_method() == 'POST' and isset($this->_request['username']) and isset($this->_request['email']) and isset($this->_request['password'])) {
+                $username = $this->_request['username'];
+                $email = $this->_request['email'];
+                $password = $this->_request['password'];
+                
+                try{
+                    $s = new Signup($username, $email, $password);
+                    $data = [
+                        "message" => "signup successfull",
+                        "user id" => $s->id,
+                    ];
+                    $this->response($this->json($data),200);
+                    $s->send_verification_main();
+                }catch (Exception $e){
+                    $data = [
+                        "error" => $e->getMessage(),
+                    ];
+                    $this->response($this->json($data),400);
+                }
+
+            }else{
+                $data=[
+                    "error" => "bad request",
+                ];
+                $this->response($this->json($data),402);
+
+            }
+            
+        }
+        
     }
-
-    // Initiiate Library
-
-    $api = new API;
-    $api->processApi();
-?>
+        // Initiiate Library
+        
+        $api = new API;
+        $api->processApi();
+        ?>
