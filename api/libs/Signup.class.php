@@ -11,6 +11,7 @@ class Signup{
     private $username;
     private $email;
     private $password;
+    private $token;
 
     public function __construct($username,$email,$password,)
     {
@@ -19,21 +20,20 @@ class Signup{
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
-        $token = bin2hex(random_bytes(16));
+        $this->token = bin2hex(random_bytes(16));
 
-        $sql = "insert into auth (username,email,password,token) values ('$username','$email','$password','$token')";
+        $sql = "insert into auth (username,email,password,token) values ('$username','$email','$password', '$this->token')";
         $result = $this->db->query($sql);
         if(!$result){
             
-              throw Exception("unable to signup");
+              throw new Exception("unable to signup");
         }else{
             $this->id = $this->db->insert_id;
-            $this->send_verification_main();
         } 
 
     }
 
-    public static function send_verification_main(){
+    public function send_verification_mail(){
         $json_config = file_get_contents($_SERVER['DOCUMENT_ROOT']."/../env.json");
         $config = json_decode($json_config,true);
     
@@ -53,7 +53,7 @@ class Signup{
         $sendSmtpEmail = new \SendinBlue\Client\Model\SendSmtpEmail(); // \SendinBlue\Client\Model\SendSmtpEmail | Values to send a transactional email
         $sendSmtpEmail['to'] = array(array('email'=>'poornachandran24680@gmail.com', 'name'=>'Poornachandran C K'));
         $sendSmtpEmail['templateId'] = 2;
-        $sendSmtpEmail['params'] = array('name'=>'John', 'surname'=>'Doe');
+        $sendSmtpEmail['params'] = array('name'=> $this->username , 'token'=> $this->token);
         $sendSmtpEmail['headers'] = array('X-Mailin-custom'=>'custom_header_1:custom_value_1|custom_header_2:custom_value_2');
     
         try {
@@ -64,13 +64,4 @@ class Signup{
         }
     }
 
-    public function signup_verify(){
-        $this->db = Database::db_connect();
-        $sql = "update auth set active = 1 ";
-        $result=$this->db->query($sql);
-        
-    }
-    
-
-    
 }

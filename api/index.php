@@ -122,6 +122,7 @@
                         "message" => "signup successfull",
                         "user id" => $s->id,
                     ];
+                    $s->send_verification_mail();
                     $this->response($this->json($data),200);
                     
                 }catch (Exception $e){
@@ -143,23 +144,50 @@
         
 
         private function signup_verify(){
-            $this->db = Database::db_connect();
-            $sql = "update auth set active = 1 ";
-            $result=$this->db->query($sql);
-            if (!$result) {
-                $data = [
-                    "error" => "account is activate",
+            if ($this->get_request_method() == 'GET' and isset($this->_request['token'])) {
+                $token = $this->_request['token'];
+                
+                $this->db = Database::db_connect();
+                $sql="select * from auth where token = '$token'";
+                $result = $this->db->query($sql);
+                if($result->num_rows == 1){
+                    $row = $result->fetch_assoc();
+                    if ($row['active'] == 1) {
+                        $data = [
+                            "message" => "already activated",
+                        ];
+                        $this->response($this->json($data),200);
+                    }else{
+
+                        $sql = "update auth set active = 1 where (token = '$token')";
+                        $result1 = $this->db->query($sql);
+                        if (!$result) {
+                            $data = [
+                                "error" => "account is activate",
+                            ];
+                            $this->response($this->json($data),500);
+                        }else{
+                            $data = [
+                                "message" => "activation successfully done ....",
+                            ];
+                            $this->response($this->json($data),200);
+                        }
+                    }
+                }else {
+                    $data=[
+                        "error" => "Bad request",
+                    ];
+                    $this->response($this->json($data),402);
+                }
+            }else {
+                $data=[
+                    "error" => "invalid token",
                 ];
-                $this->response($this->json($data),500);
-            }else{
-                $data = [
-                    "message" => "activation successfully done ....",
-                ];
-                $this->response($this->json($data),200);
+                $this->response($this->json($data),402);
             }
         }
-    
-
+            
+            
 
     }
         // Initiiate Library
