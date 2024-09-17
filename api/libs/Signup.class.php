@@ -20,9 +20,10 @@ class Signup{
         $this->username = $username;
         $this->email = $email;
         $this->password = $password;
+        $pass_hash = password_hash($this->password,PASSWORD_BCRYPT,['cost' => 8]);
         $this->token = bin2hex(random_bytes(16));
 
-        $sql = "insert into auth (username,email,password,token) values ('$username','$email','$password', '$this->token')";
+        $sql = "insert into auth (username,email,password,token) values ('$this->username','$this->email','$pass_hash', '$this->token')";
         $result = $this->db->query($sql);
         if(!$result){
             
@@ -51,7 +52,7 @@ class Signup{
             $config
         );
         $sendSmtpEmail = new \SendinBlue\Client\Model\SendSmtpEmail(); // \SendinBlue\Client\Model\SendSmtpEmail | Values to send a transactional email
-        $sendSmtpEmail['to'] = array(array('email'=>'poornachandran24680@gmail.com', 'name'=>'Poornachandran C K'));
+        $sendSmtpEmail['to'] = array(array('email'=>"$this->email", 'name'=>"$this->username"));
         $sendSmtpEmail['templateId'] = 2;
         $sendSmtpEmail['params'] = array('name'=> $this->username , 'token'=> $this->token);
         $sendSmtpEmail['headers'] = array('X-Mailin-custom'=>'custom_header_1:custom_value_1|custom_header_2:custom_value_2');

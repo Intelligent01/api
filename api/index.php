@@ -3,6 +3,7 @@
     require_once("REST.api.php");
     require_once("libs/Db.class.php");
     require_once("libs/Signup.class.php");
+    require_once("libs/Auth.class.php");
 
 
     class API extends REST {
@@ -186,7 +187,35 @@
                 $this->response($this->json($data),402);
             }
         }
-            
+        
+        private function login(){
+            if($this->get_request_method() == "POST" and isset($this->_request['username']) and isset($this->_request['password'])){
+                $username = $this->_request['username'];
+                $password = $this->_request['password'];
+                try {
+                    $auth = new Auth($username, $password);
+                    $data = [
+                        "message" => "Login success",
+                        "token" => $auth->getAuthToken()
+                    ];
+                    $data = $this->json($data);
+                    $this->response($data, 200);
+                } catch(Exception $e){
+                    $data = [
+                        "error" => $e->getMessage()
+                    ];
+                    $data = $this->json($data);
+                    $this->response($data, 406);
+                }
+            } else {
+                $data = [
+                    "error" => "Bad request"
+                ];
+                $data = $this->json($data);
+                $this->response($data, 400);
+            }
+        
+        }
             
 
     }
