@@ -2,7 +2,8 @@
 
 require($_SERVER['DOCUMENT_ROOT'].'/vendor/autoload.php');
 
-require_once("libs/User.class.php");
+require_once("User.class.php");
+require_once("Oauth.class.php");
 
 require_once("Db.class.php");
 
@@ -11,6 +12,7 @@ class Auth{
     private $username;
     private $password;
     private $isTokenAuth =false;
+    private $loginTokens;
 
     public function __construct($username,$password = null)
     {
@@ -33,30 +35,24 @@ class Auth{
                 if (!$user->isActive()) {
                     throw new Exception("your account is not active please activate your account");
                 }
-                $this->loginToken = Auth::addSession();
+                $this->loginTokens = Auth::addSession();
             }else {
-                throw new Exception("incorrect password");
-                
+                throw new Exception("incorrect password");  
             }
             
         }
 
     }
 
-    public function getAuthToken(){
-        return $this->loginToken;
+    public function getAuthTokens(){
+        return $this->loginTokens;
     }
 
 
     private function addSession(){
-        $token = Auth::hash_generate(32);
-        $query = "INSERT INTO `session` (`username`, `token`) VALUES ('$this->username', '$token');";
-        $result = $this->conn->query($query);
-        if($result){
-            return $token;
-        } else {
-            throw new Exception($result->errno);
-        }
+        $oauth = new Oauth($this->username);
+        $session = $oauth->newSession();
+        return $session;
         
     }
 

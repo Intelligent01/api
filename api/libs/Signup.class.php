@@ -12,6 +12,7 @@ class Signup{
     private $email;
     private $password;
     private $token;
+    public $id;
 
     public function __construct($username,$email,$password,)
     {

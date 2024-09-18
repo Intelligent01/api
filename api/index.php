@@ -196,7 +196,7 @@
                     $auth = new Auth($username, $password);
                     $data = [
                         "message" => "Login success",
-                        "token" => $auth->getAuthToken()
+                        "token" => $auth->getAuthTokens()
                     ];
                     $data = $this->json($data);
                     $this->response($data, 200);
